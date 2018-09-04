@@ -96,6 +96,8 @@ class ZipContentsCommand(sublime_plugin.ApplicationCommand):
                  ZipFile(self.zip_file_name) as zip:
                 if self.dir_prefixes:
                     file_in_zip = self.dir_prefixes[-1] + selected_basename
+                else:
+                    file_in_zip = selected_basename
                 temp_file.write(zip.read(file_in_zip))
             # Close the zip file and open the extracted file in its place.
             sublime.active_window().run_command("close")
