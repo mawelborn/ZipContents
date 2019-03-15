@@ -2,7 +2,6 @@ import sublime
 import sublime_plugin
 
 from os.path import basename
-from re import compile
 from tempfile import TemporaryDirectory
 from zipfile import is_zipfile, ZipFile
 
@@ -48,17 +47,18 @@ class ZipContentsCommand(sublime_plugin.ApplicationCommand):
          but not prefix/subdirectory/subdir_file
               or prefix/subdirectory/subsubdirectory/
         """
-        prefix = self.dir_prefixes[-1] if self.dir_prefixes else ""
-        prefix_pattern = compile(prefix + "[^/]+/?$")
-        filenames = [filename[len(prefix):]
-                     for filename in self.zip_contents_filenames
-                     if prefix_pattern.match(filename)]
+        prefix = "".join(self.dir_prefixes)
+        matches = [filename[len(prefix):]
+                   for filename in self.zip_contents_filenames
+                   if filename.startswith(prefix)]
+        directories = [filename.split("/", 1)[0] + "/"
+                       for filename in matches
+                       if "/" in filename]
+        files = [filename for filename in matches if "/" not in filename]
+        items = sorted(list(set(directories))) + files
         if self.dir_prefixes:
-            if filenames:
-                filenames[0] = self.UP_DIRECTORY
-            else:
-                filenames.append(self.UP_DIRECTORY)
-        return filenames
+            items.insert(0, self.UP_DIRECTORY)
+        return items
 
     def select_item(self, selected_index):
         # Do nothing if no item was selected in the quick panel.
@@ -75,13 +75,13 @@ class ZipContentsCommand(sublime_plugin.ApplicationCommand):
             self.show_items_with_dir_prefix()
         # If the selected filename is a directory, push it onto the stack of directory prefixes and
         # reshow the quick panel with the new items that match.
-        elif selected_basename[-1] == "/":
+        elif "/" in selected_basename:
             self.dir_prefixes.append(selected_basename)
             self.show_items_with_dir_prefix()
         # Otherwise, extract the selected file into a temporary directory and show it in place of
         # the zip archive.
         else:
-            dir_prefix = self.dir_prefixes[-1] if self.dir_prefixes else ""
+            dir_prefix = "".join(self.dir_prefixes)
             temp_dir_name = basename(self.zip_file_name) + "__" + dir_prefix
             temp_dir_name = temp_dir_name.replace("/", "_").replace("\\", "_")
             temp_directory = TemporaryDirectory(prefix=temp_dir_name)
@@ -94,10 +94,7 @@ class ZipContentsCommand(sublime_plugin.ApplicationCommand):
             # Extract the selected file in the zip archive into the temporary directory.
             with open(temp_file_name, "wb") as temp_file, \
                  ZipFile(self.zip_file_name) as zip:
-                if self.dir_prefixes:
-                    file_in_zip = self.dir_prefixes[-1] + selected_basename
-                else:
-                    file_in_zip = selected_basename
+                file_in_zip = dir_prefix + selected_basename
                 temp_file.write(zip.read(file_in_zip))
             # Close the zip file and open the extracted file in its place.
             sublime.active_window().run_command("close")
