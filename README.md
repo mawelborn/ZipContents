@@ -1,19 +1,18 @@
 # ZipContents
 
-A Sublime Text 3 plugin for browsing and viewing the contents of opened zip files. Useful for
-quickly referencing archived files in completed projects.
+A Sublime Text 3 plugin for browsing and viewing the contents of zip archives.
 
 
 ## Installation
 
-Put `ZipContents.sublime-package` in `<data_path>/Installed Packages/`.
+Install with [Package Control](https://packagecontrol.io) or download the latest
+`ZipContents.sublime-package` file from the [Releases
+page](https://github.com/mawelborn/ZipContents/releases) and place it in Sublime Text's
+`<data_path>/Installed Packages/` directory.
 
 
 ## Usage
 
-Open a zip file (or other filetype based on zip) with Sublime Text. A quick panel will display the
-contents of the root of the zip file. Select a directory to show its contents. Select `../` to go up
-a directory. Select a file to extract it and open it in place of the zip file.
-
-Zip file contents opened with this plugin are extracted to temporary directories that are
-automatically cleaned up when Sublime Text is closed.
+Open a zip archive (or other filetype based on zip) with Sublime Text. A quick panel will display
+the contents of the archive. Select a file to extract it to a temporary directory and open it in
+place of the zip file. Extracted files are automatically cleaned up when Sublime Text closes.

@@ -17,30 +17,27 @@ class ZipContentsCommand(sublime_plugin.ApplicationCommand):
 
     def __init__(self):
         super().__init__()
-        # Temporary directories holding files extracted from zip archives will be automatically
-        # deleted when the plugin is unloaded - most importantly when Sublime Text closes.
         self.created_temp_dirs = []
 
     def run(self):
         self.zip_file_name = sublime.active_window().active_view().file_name()
         with ZipFile(self.zip_file_name) as zip:
             self.zip_contents_filenames = sorted(zip.namelist())
-        # This is a stack of directory prefixes for faking hierarchical browsing of the zip file's
-        # contents.
+        # Emulate hierarchical browsing of zip archives using a stack of directory prefixes.
         self.dir_prefixes = []
         self.show_items_with_dir_prefix()
 
     def show_items_with_dir_prefix(self):
         """
-        Display a quick panel that lists all the files and directories that are in the current
-        directory within the zip file.
+        List all files and directories in the zip archive that have the current directory prefix
+        using a quick panel.
         """
         sublime.active_window().show_quick_panel(self.items_with_dir_prefix(), self.select_item)
 
     def items_with_dir_prefix(self):
         """
-        Return a list of items that are directly beneath the top directory prefix in the prefix
-        stack. Given 'prefix/' is the current top prefix, return items like:
+        Return a list of items with the current directory prefix.
+        Given 'prefix/', return items like:
                  prefix/file
              and prefix/another_file
              and prefix/subdirectory/
@@ -85,15 +82,14 @@ class ZipContentsCommand(sublime_plugin.ApplicationCommand):
             temp_dir_name = basename(self.zip_file_name) + "__" + dir_prefix
             temp_dir_name = temp_dir_name.replace("/", "_").replace("\\", "_")
             temp_directory = TemporaryDirectory(prefix=temp_dir_name)
-            # TemporaryDirectory objects automatically `rm -r` the created filesystem directory when
-            # garbage collected. Add it to the list of created_temp_dirs so that it sticks
-            # around so long as the plugin is loaded and is automatically cleaned up when the plugin
-            # is unloaded. Like when Sublime Text closes.
+            # TemporaryDirectory objects automatically delete the associated filesystem directory
+            # when garbage collected. Adding it to the list of created directories keeps it around
+            # as long as the plugin is loaded. Created directories automatically get cleaned up when
+            # the plugin is unloaded, i.e. when Sublime Text closes.
             self.created_temp_dirs.append(temp_directory)
             temp_file_name = temp_directory.name + "/" + selected_basename
             # Extract the selected file in the zip archive into the temporary directory.
-            with open(temp_file_name, "wb") as temp_file, \
-                 ZipFile(self.zip_file_name) as zip:
+            with open(temp_file_name, "wb") as temp_file, ZipFile(self.zip_file_name) as zip:
                 file_in_zip = dir_prefix + selected_basename
                 temp_file.write(zip.read(file_in_zip))
             # Close the zip file and open the extracted file in its place.
