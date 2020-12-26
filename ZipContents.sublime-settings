@@ -1,0 +1,13 @@
+{
+    // Exclude files from zip contents using Sublime Text file patterns.
+    // https://www.sublimetext.com/docs/file_patterns.html
+    // E.g. exclude all dotfiles with [".*"]
+    //      exlcude all rc and git files with [".*rc", ".git*"]
+    "file_exclude_patterns": [],
+
+    // Exclude folders from zip contents using Sublime Text file patterns.
+    // https://www.sublimetext.com/docs/file_patterns.html
+    // E.g. exclude Git directories with [".git"]
+    //      exclude Python venv and node_modules folders with ["venv", "node_modules"]
+    "folder_exclude_patterns": []
+}

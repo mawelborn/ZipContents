@@ -1,4 +1,5 @@
-from sublime import set_timeout_async, Region
+from re import compile, escape
+from sublime import load_settings, set_timeout_async, Region
 from sublime_plugin import EventListener
 from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
@@ -8,9 +9,15 @@ from .viewio import HexViewIO
 
 ZIP_SIGNATURES = ["504b 0304", "504b 0506", "504b 00708"]
 
+settings = None
 zip_contents = None
 zip_file = None
 zip_window = None
+
+
+def plugin_loaded():
+    global settings
+    settings = load_settings("ZipContents.sublime-settings")
 
 
 class ZipContentsLoadListener(EventListener):
@@ -33,7 +40,35 @@ def prepare_contents(contents):
     # Remove folder-only entries.
     contents = [file_path for file_path in contents
                 if not file_path.endswith("/")]
+    # Remove entries that match file and folder exclude patterns.
+    file_exclude_patterns = settings.get("file_exclude_patterns")
+    folder_exclude_patterns = settings.get("folder_exclude_patterns")
+    if file_exclude_patterns or folder_exclude_patterns:
+        exclude_patterns = compile_exclude_patterns(file_exclude_patterns,
+                                                    folder_exclude_patterns)
+        contents = [file_path for file_path in contents
+                    if not exclude_patterns.search(file_path)]
     return sorted(contents)
+
+
+def compile_exclude_patterns(file_exclude_patterns, folder_exclude_patterns):
+    patterns = []
+    if file_exclude_patterns:  # File patterns are followed by end of string.
+        patterns += [convert_pattern(pattern) + "$" for pattern in file_exclude_patterns]
+    if folder_exclude_patterns:  # Folder patterns are followed by slash.
+        patterns += [convert_pattern(pattern) + "/" for pattern in folder_exclude_patterns]
+    # Match beginning of string or slash, followed by any pattern.
+    return compile("(?:^|/)(?:" + "|".join(patterns) + ")")
+
+
+def convert_pattern(pattern):
+    # Escape everything but "*" and "?", and convert those to "[^/]*" and "[^/]" respectively.
+    pattern = pattern.replace("*", "__zipcontentsstar__")
+    pattern = pattern.replace("?", "__zipcontentsquestion__")
+    pattern = escape(pattern)
+    pattern = pattern.replace("__zipcontentsstar__", "[^/]*")
+    pattern = pattern.replace("__zipcontentsquestion__", "[^/]")
+    return pattern
 
 
 def extract_file(index):
