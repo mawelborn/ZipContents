@@ -30,6 +30,9 @@ def show_zip_contents(view):
 
 
 def prepare_contents(contents):
+    # Remove folder-only entries.
+    contents = [file_path for file_path in contents
+                if not file_path.endswith("/")]
     return sorted(contents)
 
 
