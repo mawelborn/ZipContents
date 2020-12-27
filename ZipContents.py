@@ -1,5 +1,5 @@
 from re import compile, escape
-from sublime import load_settings, set_timeout_async, Region
+from sublime import load_settings, set_timeout, Region
 from sublime_plugin import EventListener
 from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
@@ -21,7 +21,7 @@ def plugin_loaded():
 
 
 class ZipContentsLoadListener(EventListener):
-    def on_load_async(self, view):
+    def on_load(self, view):
         if view.encoding() == "Hexadecimal":
             signature_region = Region(0, len(ZIP_SIGNATURES[0]))
             if view.substr(signature_region) in ZIP_SIGNATURES:
@@ -95,7 +95,7 @@ def extract_file(index):
 
     def await_loading():
         if view.is_loading():
-            set_timeout_async(await_loading, 250)
+            set_timeout(await_loading, 250)
         else:
             view.set_name(file_name)
             view.set_scratch(True)
