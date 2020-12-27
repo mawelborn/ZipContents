@@ -1,0 +1,10 @@
+Version 2.0.0
+
+Completely rewritten to reduce file IO, match Sublime Text's Go To Anything behavior,
+and filter out irrelevant contents via file and folder exclude patterns:
+
+- Use a fast file signature check in place of ZIP structure check.
+- Reuse the hex representation from Sublime Text in place of file reads.
+- Use a TemporaryFile for immediate cleanup of extracted files.
+- Display contents in a flat list to match Sublime Text's Go To Anything behavior.
+- Support file and folder exclude patterns via a settings file.

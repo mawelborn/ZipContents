@@ -1,0 +1,21 @@
+504b0 304          14000                 00                   00
+   80     05 06   42    3  4dc2  b1 b57  d7      702  00 003  00     400
+  00  070 000  00 4c      49  43 454  e5 3456  55   2 4b8  f9 b301  0
+ be   fb5 78c72d  a9    5 d0  f6 71   aa 7a    7382b  3b   10 a1     819
+67d31 c09 98       e08ae   0c83  68   df  6df7  74c1e dd   aa  52a4     c
+          8e                                                         3f9
+
+
+A ZIP archive browser for Sublime Text 3 that supports file and folder exclude patterns.
+
+
+Configuration:
+
+Navigate to  Preferences -> Package Settings -> ZipContents -> Edit Settings to configure file and
+folder exclude patterns.
+
+
+Usage:
+
+Open a ZIP archive (or other filetype based on ZIP) with Sublime Text. A quick panel will display
+the contents of the archive. Select a file to extract and view it.

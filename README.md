@@ -1,6 +1,6 @@
 # ZipContents
 
-A Sublime Text 3 plugin for browsing and viewing the contents of zip archives.
+A ZIP archive browser for Sublime Text 3 that supports file and folder exclude patterns.
 
 
 ## Installation
@@ -11,8 +11,13 @@ page](https://github.com/mawelborn/ZipContents/releases) and place it in Sublime
 `<data_path>/Installed Packages/` directory.
 
 
+## Configuration
+
+Navigate to `Preferences`->`Package Settings`->`ZipContents`->`Edit Settings` to configure file and
+folder exclude patterns.
+
+
 ## Usage
 
-Open a zip archive (or other filetype based on zip) with Sublime Text. A quick panel will display
-the contents of the archive. Select a file to extract it to a temporary directory and open it in
-place of the zip file. Extracted files are automatically cleaned up when Sublime Text closes.
+Open a ZIP archive (or other filetype based on ZIP) with Sublime Text. A quick panel will display
+the contents of the archive. Select a file to extract and view it.
