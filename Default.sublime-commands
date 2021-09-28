@@ -1,0 +1,6 @@
+[
+	{
+		"caption": "ZipContents - Display contents",
+		"command": "display_zip_contents"
+	}
+]

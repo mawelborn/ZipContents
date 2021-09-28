@@ -1,6 +1,6 @@
 from re import compile, escape
 from sublime import load_settings, set_timeout, Region
-from sublime_plugin import EventListener
+from sublime_plugin import EventListener, TextCommand
 from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
 
@@ -28,12 +28,21 @@ class ZipContentsLoadListener(EventListener):
                 show_zip_contents(view)
 
 
+class DisplayZipContentsCommand(TextCommand):
+    def run(self, edit):
+        if self.view.encoding() == "Hexadecimal":
+            signature_region = Region(0, len(ZIP_SIGNATURES[0]))
+            if self.view.substr(signature_region) in ZIP_SIGNATURES:
+                show_zip_contents(self.view)
+
+
 def show_zip_contents(view):
     global zip_contents, zip_file, zip_window
     zip_window = view.window()
     zip_file = ZipFile(HexViewIO(view))
     zip_contents = prepare_contents(zip_file.namelist())
-    zip_window.show_quick_panel(zip_contents, extract_file)
+    if zip_window:
+        zip_window.show_quick_panel(zip_contents, extract_file)
 
 
 def prepare_contents(contents):
