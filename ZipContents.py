@@ -1,5 +1,5 @@
 from re import compile, escape
-from sublime import load_settings, set_timeout, Region
+from sublime import active_window, load_settings, set_timeout, version, Region
 from sublime_plugin import EventListener
 from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
@@ -20,12 +20,45 @@ def plugin_loaded():
     settings = load_settings("ZipContents.sublime-settings")
 
 
-class ZipContentsLoadListener(EventListener):
+class ZipContentsListener(EventListener):
+    def __init__(self):
+        super().__init__()
+
+        if int(version()) < 4050:
+            self.is_quick_panel = self.is_quick_panel_heuristic
+
+        self.quick_panel_open = self.is_quick_panel(active_window().active_view())
+        self.pending_zip_view = None
+
+    def is_quick_panel(self, view):
+        return view.element() in ("command_palette:input", "goto_anything:input")
+
+    def is_quick_panel_heuristic(self, view):
+        return view.settings().get("is_widget")
+
+    def on_activated(self, view):
+        if self.is_quick_panel(view):
+            self.quick_panel_open = True
+
+    def on_deactivated(self, view):
+        if self.is_quick_panel(view):
+            self.quick_panel_open = False
+            if self.pending_zip_view:
+                show_zip_contents(self.pending_zip_view)
+                self.pending_zip_view = None
+
     def on_load(self, view):
         if view.encoding() == "Hexadecimal":
             signature_region = Region(0, len(ZIP_SIGNATURES[0]))
             if view.substr(signature_region) in ZIP_SIGNATURES:
-                show_zip_contents(view)
+                if self.quick_panel_open:
+                    self.pending_zip_view = view
+                else:
+                    show_zip_contents(view)
+
+    def on_close(self, view):
+        if self.pending_zip_view == view:
+            self.pending_zip_view = None
 
 
 def show_zip_contents(view):
@@ -33,7 +66,8 @@ def show_zip_contents(view):
     zip_window = view.window()
     zip_file = ZipFile(HexViewIO(view))
     zip_contents = prepare_contents(zip_file.namelist())
-    zip_window.show_quick_panel(zip_contents, extract_file)
+    # A quick panel can't be shown on the same frame that another's being deactivated?
+    set_timeout(lambda: zip_window.show_quick_panel(zip_contents, extract_file), 1)
 
 
 def prepare_contents(contents):
