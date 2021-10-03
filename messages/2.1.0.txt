@@ -1,0 +1,7 @@
+Version 2.1.0
+
+Improved behavior when opening ZIP archives using Goto Anything:
+
+- Transient previews of ZIP archives no longer steal the Goto Anything panel from the user.
+- Contents of ZIP archives opened with Goto Anything are shown after the Goto Anything panel closes.
+- Transient previews of very small ZIP archives with no window property no longer cause an error.
