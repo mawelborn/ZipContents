@@ -14,8 +14,6 @@ class ZipFileListener(EventListener):
     _OVERLAY_PANEL_ELEMENTS = ("command_palette:input", "goto_anything:input", "quick_panel:input")
 
     def __init__(self):
-        super().__init__()
-
         if int(sublime.version()) < 4050:
             self._is_overlay_panel = self._is_overlay_panel_heuristic
 
