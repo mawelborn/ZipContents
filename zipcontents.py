@@ -17,8 +17,11 @@ class ZipFileListener(EventListener):
         if int(sublime.version()) < 4050:
             self._is_overlay_panel = self._is_overlay_panel_heuristic
 
-        self._overlay_panel_open = self._is_overlay_panel(sublime.active_window().active_view())
+        self._overlay_panel_open = False
         self._zip_view_awaiting_panel_close = None
+
+    def on_init(self, views):
+        self._overlay_panel_open = self._is_overlay_panel(sublime.active_window().active_view())
 
     @classmethod
     def _is_overlay_panel(cls, view):
