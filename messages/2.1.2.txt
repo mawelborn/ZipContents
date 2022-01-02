@@ -1,0 +1,3 @@
+Version 2.1.2
+
+Fixed an issue where ZIP contents would not be shown after a cold start of Sublime Text.
