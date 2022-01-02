@@ -11,7 +11,7 @@ from .viewio import HexViewIO
 
 class ZipFileListener(EventListener):
     _ZIP_SIGNATURES = ("504b 0304", "504b 0506", "504b 00708")
-    _OVERLAY_PANEL_ELEMENTS = ("command_palette:input", "goto_anything:input")
+    _OVERLAY_PANEL_ELEMENTS = ("command_palette:input", "goto_anything:input", "quick_panel:input")
 
     def __init__(self):
         super().__init__()
