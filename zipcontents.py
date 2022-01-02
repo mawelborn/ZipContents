@@ -1,29 +1,30 @@
+import re
 from collections import defaultdict
-from re import compile, escape
 from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
 
-from sublime import Region, active_window, load_settings, set_timeout, version
+import sublime
 from sublime_plugin import EventListener
 
 from .viewio import HexViewIO
 
 
 class ZipFileListener(EventListener):
-    _ZIP_SIGNATURES = ["504b 0304", "504b 0506", "504b 00708"]
+    _ZIP_SIGNATURES = ("504b 0304", "504b 0506", "504b 00708")
+    _OVERLAY_PANEL_ELEMENTS = ("command_palette:input", "goto_anything:input")
 
     def __init__(self):
         super().__init__()
 
-        if int(version()) < 4050:
+        if int(sublime.version()) < 4050:
             self._is_overlay_panel = self._is_overlay_panel_heuristic
 
-        self._overlay_panel_open = self._is_overlay_panel(active_window().active_view())
+        self._overlay_panel_open = self._is_overlay_panel(sublime.active_window().active_view())
         self._zip_view_awaiting_panel_close = None
 
-    @staticmethod
-    def _is_overlay_panel(view):
-        return view.element() in ("command_palette:input", "goto_anything:input")
+    @classmethod
+    def _is_overlay_panel(cls, view):
+        return view.element() in cls._OVERLAY_PANEL_ELEMENTS
 
     @staticmethod
     def _is_overlay_panel_heuristic(view):
@@ -43,7 +44,7 @@ class ZipFileListener(EventListener):
             zip_contents = ZipContents(self, self._zip_view_awaiting_panel_close)
             self._zip_view_awaiting_panel_close = None
             # A quick panel won't show if an overlay panel is in the process of closing.
-            set_timeout(zip_contents.show, 0)
+            sublime.set_timeout(zip_contents.show, 0)
 
     def on_load(self, view):
         if view.encoding() == "Hexadecimal" and self._view_starts_with_zip_signature(view):
@@ -54,7 +55,7 @@ class ZipFileListener(EventListener):
 
     @classmethod
     def _view_starts_with_zip_signature(cls, view):
-        signature_region = Region(0, len(cls._ZIP_SIGNATURES[0]))
+        signature_region = sublime.Region(0, len(cls._ZIP_SIGNATURES[0]))
         return view.substr(signature_region) in cls._ZIP_SIGNATURES
 
     def on_close(self, view):
@@ -64,7 +65,7 @@ class ZipFileListener(EventListener):
 
 class ZipContents:
     def __init__(self, listener, view):
-        self._settings = load_settings("ZipContents.sublime-settings")
+        self._settings = sublime.load_settings("ZipContents.sublime-settings")
         self._view = view
         self._window = view.window()
         self._file = ZipFile(HexViewIO(view))
@@ -99,14 +100,14 @@ class ZipContents:
             patterns += [cls._convert_pattern(pattern) + "/" for pattern in folder_exclude_patterns]
 
         # Match beginning of string or slash, followed by any pattern.
-        return compile("(?:^|/)(?:" + "|".join(patterns) + ")")
+        return re.compile("(?:^|/)(?:" + "|".join(patterns) + ")")
 
     @staticmethod
     def _convert_pattern(pattern):
         # Convert "*" and "?" to "[^/]*" and "[^/]" and escape everything else.
         pattern = pattern.replace("*", "__zipcontentsstar__")
         pattern = pattern.replace("?", "__zipcontentsquestion__")
-        pattern = escape(pattern)
+        pattern = re.escape(pattern)
         pattern = pattern.replace("__zipcontentsstar__", "[^/]*")
         pattern = pattern.replace("__zipcontentsquestion__", "[^/]")
         return pattern
