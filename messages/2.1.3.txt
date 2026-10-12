@@ -1,0 +1,3 @@
+Version 2.1.3
+
+Fixed an issue where contents of split ZIP archives would not be displayed.
